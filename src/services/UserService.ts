@@ -573,7 +573,8 @@ export default class UserService extends BaseService<User> {
 
     if (isArrayPopulated(sec.roleIds)) {
       let ids = sec.roleIds;
-      query.innerJoin(Role, 'r', 'r.id = fr.roleId')
+      query
+        .innerJoin(Role, 'r', 'r.id = fr.roleId')
         .andWhere('r.id in (:ids)', { ids })
         .andWhere('ure.entityTypeId in (3,6)');
     }
@@ -970,10 +971,10 @@ export default class UserService extends BaseService<User> {
 
   public async userPersonalDetails(userId: number, organisationUniqueKey: any) {
     try {
-      console.log(`${userId} and ${organisationUniqueKey}`)
+      console.log(`${userId} and ${organisationUniqueKey}`);
       let result = await this.entityManager.query('call wsa_users.usp_user_personal_details(?,?)', [
         userId,
-        organisationUniqueKey || null
+        organisationUniqueKey || null,
       ]);
 
       let competitionMap = new Map();
@@ -1417,7 +1418,7 @@ export default class UserService extends BaseService<User> {
               // paidByUserId: item.paidByUserId,
               paidByUsers: paidByUsers,
               numberOfMatches: item.numberOfMatches,
-              paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId)
+              paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId),
             };
 
             if (isArrayPopulated(result[2])) {

@@ -1,35 +1,31 @@
-import {
-  Authorized,
-  Body,
-  Get,
-  HeaderParam,
-  JsonController,
-  Post,
-  QueryParam,
-} from 'routing-controllers';
+import { Authorized, Body, Get, HeaderParam, JsonController, Post, Res } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserTcBatchAcknowledgeDto } from './dto/UserTcBatchAcknowledgeDto';
 import { BaseController } from './BaseController';
-import { TC } from '../models/TC';
-import { TCTypeEnum } from '../models/enum/TCTypeEnum';
+import { Response } from 'express';
 
-@JsonController('/terms-and-conditions')
+@JsonController('/api/terms-and-conditions')
 @Authorized()
 export class UserTermsAndConditionsController extends BaseController {
   @Get()
-  async index(
-    @QueryParam('userId') userId: number,
-    @HeaderParam('authorization') user: User,
-    @QueryParam('tcType') tcType: TCTypeEnum,
-  ): Promise<any> {
-    return this.termsAndConditionsService.getAcknowledgementListForUser(user, tcType);
+  async index(@HeaderParam('authorization') user: User, @Res() response: Response) {
+    const userTCAcknowledgement = await this.termsAndConditionsAcknowledgementService.getAcknowledgementListForUser(
+      user,
+    );
+    return response.status(200).send({ userTCAcknowledgement });
   }
 
-  @Post('/batch/acknowledge')
+  @Post('/')
   async batchAcknowledge(
     @Body() body: UserTcBatchAcknowledgeDto,
     @HeaderParam('authorization') user: User,
-  ): Promise<TC[]> {
-    return this.termsAndConditionsService.batchAcknowledge(user, body.tcIds);
+    @Res() response: Response,
+  ) {
+    const organization = await this.organisationService.findById(body.organisationId);
+    await this.termsAndConditionsAcknowledgementService.saveUserAcknowledge(user, organization);
+    const userTCAcknowledgement = await this.termsAndConditionsAcknowledgementService.getAcknowledgementListForUser(
+      user,
+    );
+    return response.status(200).send({ userTCAcknowledgement });
   }
 }

@@ -20,7 +20,7 @@ import CharityRoundUpService from '../services/CharityRoundUpService';
 import CharityService from '../services/CharityService';
 import CommunicationTrackService from '../services/CommunicationTrackService';
 import CommunicationService from '../services/CommunicationService';
-import { TermsAndConditionsService } from '../services/TermsAndConditionsService';
+import TermsAndConditionsAcknowledgementService from '../services/TermsAndConditionsAcknowledgementService';
 import OrganisationHierarchyService from '../services/OrganisationHierarchyService';
 
 export class BaseController {
@@ -76,7 +76,7 @@ export class BaseController {
   protected communicationTrackService: CommunicationTrackService;
 
   @Inject()
-  protected termsAndConditionsService: TermsAndConditionsService;
+  protected termsAndConditionsAcknowledgementService: TermsAndConditionsAcknowledgementService;
 
   @Inject()
   protected communicationService: CommunicationService;
