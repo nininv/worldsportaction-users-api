@@ -115,7 +115,7 @@ export class UserController extends BaseController {
         }
 
         user = await this.userService.findByCredentialsForWeb(email, password);
-        return this.responseWithTokenAndUser(email, password, user);
+        return this.responseWithTokenAndUser(email, password, user, Date.now());
       }
     } else {
       throw new LoginError(AppConstants.loginUnsuccessfulMsg);
@@ -659,13 +659,14 @@ export class UserController extends BaseController {
     }
   }
 
-  private async responseWithTokenAndUser(login, password, user: User) {
+  private async responseWithTokenAndUser(login, password, user: User, signDate = 0) {
     await this.updateFirebaseData(user, password);
     user.password = undefined;
     user.reset = undefined;
     return {
       authToken: authToken(login, password),
       user: user,
+      signDate: signDate
     };
   }
 
