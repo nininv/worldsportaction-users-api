@@ -573,7 +573,8 @@ export default class UserService extends BaseService<User> {
 
     if (isArrayPopulated(sec.roleIds)) {
       let ids = sec.roleIds;
-      query.innerJoin(Role, 'r', 'r.id = fr.roleId')
+      query
+        .innerJoin(Role, 'r', 'r.id = fr.roleId')
         .andWhere('r.id in (:ids)', { ids })
         .andWhere('ure.entityTypeId in (3,6)');
     }
@@ -970,10 +971,10 @@ export default class UserService extends BaseService<User> {
 
   public async userPersonalDetails(userId: number, organisationUniqueKey: any) {
     try {
-      console.log(`${userId} and ${organisationUniqueKey}`)
+      console.log(`${userId} and ${organisationUniqueKey}`);
       let result = await this.entityManager.query('call wsa_users.usp_user_personal_details(?,?)', [
         userId,
-        organisationUniqueKey || null
+        organisationUniqueKey || null,
       ]);
 
       let competitionMap = new Map();
@@ -1120,15 +1121,7 @@ export default class UserService extends BaseService<User> {
   }
 
   public async addDocument(data: any) {
-    let {
-      userId,
-      organisationUniqueKey,
-      dateUploaded,
-      docType,
-      docUrl,
-      documentId,
-      docTypeDescription,
-    } = data;
+    let { userId, dateUploaded, docType, docUrl, documentId, docTypeDescription } = data;
     try {
       if (!!documentId) {
         let [
@@ -1149,8 +1142,8 @@ export default class UserService extends BaseService<User> {
       let {
         insertId,
       } = await this.entityManager.query(
-        `insert into wsa_users.documents(userId, organisationUniqueKey, dateUploaded, docType, docTypeDescription, docUrl) values(?,?,?,?,?,?)`,
-        [userId, organisationUniqueKey, dateUploaded, docType, docTypeDescription, docUrl],
+        `insert into wsa_users.documents(userId, dateUploaded, docType, docTypeDescription, docUrl) values(?,?,?,?,?)`,
+        [userId, dateUploaded, docType, docTypeDescription, docUrl],
       );
       return insertId;
     } catch (error) {
@@ -1167,11 +1160,11 @@ export default class UserService extends BaseService<User> {
     }
   }
 
-  public async userDocuments(userId: number, organisationUniqueKey: any) {
+  public async userDocuments(userId: number) {
     try {
       let result = await this.entityManager.query(
-        'select * from wsa_users.documents doc where doc.userId = ? and doc.organisationUniqueKey = ?',
-        [userId, organisationUniqueKey],
+        'select * from wsa_users.documents doc where doc.userId = ?',
+        [userId],
       );
       return result;
     } catch (error) {
@@ -1417,7 +1410,7 @@ export default class UserService extends BaseService<User> {
               // paidByUserId: item.paidByUserId,
               paidByUsers: paidByUsers,
               numberOfMatches: item.numberOfMatches,
-              paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId)
+              paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId),
             };
 
             if (isArrayPopulated(result[2])) {

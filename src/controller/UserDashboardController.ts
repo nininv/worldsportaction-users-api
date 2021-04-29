@@ -120,17 +120,13 @@ export class UserDashboardController extends BaseController {
   @Get('/user/documents')
   async userDocuments(
     @QueryParam('userId') userId: number,
-    @QueryParam('organisationId') organisationUniqueKey: string,
     @HeaderParam('authorization') currentUser: User,
     @Res() response: Response,
   ) {
     try {
       if (userId) {
         if (currentUser.id) {
-          const userDocumentsRes = await this.userService.userDocuments(
-            userId,
-            organisationUniqueKey,
-          );
+          const userDocumentsRes = await this.userService.userDocuments(userId);
           return response.status(200).send(userDocumentsRes);
         }
       }
@@ -152,9 +148,9 @@ export class UserDashboardController extends BaseController {
     @Body() data: any,
     @Res() response: Response,
   ) {
-    let { userId, organisationUniqueKey } = data;
+    const { userId } = data;
     try {
-      if (userId && organisationUniqueKey) {
+      if (userId) {
         if (currentUser.id) {
           const userDocumentsRes = await this.userService.addDocument(data);
           return response.status(200).send({ documentId: userDocumentsRes });
