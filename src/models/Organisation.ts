@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm-plus';
 import { IsNumber, IsDate, IsString } from 'class-validator';
-import { TC } from './TC';
+import { TCUserAcknowledgement } from './TCUserAcknowledgement';
 
 @Entity('organisation')
 export class Organisation extends BaseEntity {
@@ -102,8 +102,8 @@ export class Organisation extends BaseEntity {
   @Column({ nullable: true, default: null })
   stripeBecsMandateId: string;
 
-  @OneToMany(type => TC, tc => tc.organisation)
-  termsAndConditionEntities: TC[];
+  @OneToMany(type => TCUserAcknowledgement, tc => tc.organisation)
+  termsAndConditionEntities: TCUserAcknowledgement[];
 
   @IsString()
   @Column({ default: null, nullable: true })

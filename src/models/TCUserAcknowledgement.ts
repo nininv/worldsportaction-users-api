@@ -1,18 +1,33 @@
-import { BaseEntity, Entity, ManyToOne, PrimaryColumn } from 'typeorm-plus';
-import { TC } from './TC';
+import {
+  BaseEntity,
+  Entity,
+  ManyToOne,
+  Column,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+} from 'typeorm-plus';
 import { User } from './User';
+import { Organisation } from './Organisation';
+import { IsNumber } from 'class-validator';
 
-@Entity()
+@Entity('tcUserAcknowledgement', { database: 'wsa_users' })
 export class TCUserAcknowledgement extends BaseEntity {
-  @PrimaryColumn()
-  tcId!: number;
+  @IsNumber()
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @PrimaryColumn()
-  userId!: number;
+  @IsNumber()
+  @Column()
+  organisationId: number;
 
-  @ManyToOne(type => TC, tc => tc.acknowledgements, { eager: true })
-  tc: TC;
+  @IsNumber()
+  @Column()
+  userId: number;
+
+  @ManyToOne(type => Organisation)
+  organisation: Organisation;
 
   @ManyToOne(type => User, { eager: true })
+  @JoinColumn()
   user: User;
 }
