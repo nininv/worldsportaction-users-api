@@ -509,6 +509,7 @@ export default class UserService extends BaseService<User> {
     basedOnLinkedEntities: boolean = true,
     competitionId: number = null,
     organisationId: number = null,
+    matchId: number = 0,
   ): Promise<any> {
     let query = this.entityManager
       .createQueryBuilder(User, 'u')
@@ -609,12 +610,13 @@ export default class UserService extends BaseService<User> {
           return query;
         },
         'match',
-        'match.id = ros.matchId and ((match.startTime ' +
+        'match.id = ros.matchId and match.id != :matchId and ((match.startTime ' +
           '<= :startTime and match.approxEndTime > :startTime) or (match.startTime ' +
           '>= :startTime and match.startTime < :endTime))',
         {
-          startTime: startTime,
-          endTime: endTime,
+          matchId,
+          startTime,
+          endTime,
         },
       );
       query.andWhere('bk.userId is null');

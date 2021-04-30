@@ -437,6 +437,7 @@ export class UserController extends BaseController {
     @QueryParam('limit') limit?: string,
     @QueryParam('needUREs') needUREs: boolean = false,
     @QueryParam('individualLinkedEntityRequired') individualLinkedEntityRequired: boolean = false,
+    @QueryParam('matchId') matchId: number = 0,
   ) {
     if (!isObjectNotNullAndUndefined(entityTypeId) || !isObjectNotNullAndUndefined(entityId)) {
       return response.status(400).send({
@@ -459,6 +460,10 @@ export class UserController extends BaseController {
       true,
       matchStartTime,
       matchEndTime,
+      true,
+        null,
+        null,
+      matchId,
     );
 
     return await this.getUsersByRoles(result, roleIds, needUREs, offset, limit);
