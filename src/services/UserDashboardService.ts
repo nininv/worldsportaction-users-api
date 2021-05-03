@@ -344,6 +344,7 @@ export default class UserDashboardService extends BaseService<User> {
           'Competition Name': '',
           'Start Date': '',
           'End Date': '',
+          'Valid Until': '',
           Venue: '',
           'Membership Product': '',
           'Membership Division': '',
