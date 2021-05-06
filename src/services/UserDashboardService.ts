@@ -308,7 +308,7 @@ export default class UserDashboardService extends BaseService<User> {
     try {
       const { userId, yearRefId, competitionId, organisationId } = requestBody;
       let result = await this.entityManager.query(
-        'call wsa_users.usp_export_registration_data_new(?,?,?,?)',
+        'call wsa_users.usp_export_registration_data_v2(?,?,?,?)',
         [userId, yearRefId, competitionId, organisationId],
       );
 
