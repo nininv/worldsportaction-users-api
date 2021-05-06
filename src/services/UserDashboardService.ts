@@ -306,14 +306,19 @@ export default class UserDashboardService extends BaseService<User> {
 
   public async exportUserRegistrationData(requestBody) {
     try {
+      const { userId, yearRefId, competitionId, organisationId } = requestBody;
       let result = await this.entityManager.query(
-        'call wsa_users.usp_export_registration_data(?)',
-        [requestBody.userId],
+        'call wsa_users.usp_export_registration_data_new(?,?,?,?)',
+        [userId, yearRefId, competitionId, organisationId],
       );
 
       if (isArrayPopulated(result[0])) {
         for (let res of result[0]) {
           if (res.Venue != null) res.Venue = res.Venue.join(', ');
+          delete res.registrationId;
+          delete res.registrationUniqueKey;
+          delete res.userRegUniqueKey;
+          delete res.org1Id;
         }
 
         // for (let res1 of result[0]) {
