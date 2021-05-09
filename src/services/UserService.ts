@@ -2266,7 +2266,7 @@ export default class UserService extends BaseService<User> {
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-                <title>Netball Livescores</title>
+                <title>${process.env.APP_NAME}</title>
                 <style type="text/css">
                     @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,700,900');
                 </style>

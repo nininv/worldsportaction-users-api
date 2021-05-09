@@ -512,8 +512,8 @@ export class UserDashboardController extends BaseController {
         await this.userService.sendAndLogEmail(
           `${parseInt(isInActive, 10) === 1 ? getParentEmail(email) : email}`,
           userId,
-          'NetballConnect Verification',
-          `Your Netball Verification Code is:<b>${digitCode}</b>`,
+          `${process.env.APP_NAME} Verification`,
+          `Your ${process.env.APP_NAME} Verification Code is:<b>${digitCode}</b>`,
           '',
           3,
           userId,
@@ -524,7 +524,7 @@ export class UserDashboardController extends BaseController {
         await this.userService.sendAndLogSMS(
           `${mobileNumber}`,
           userId,
-          `Your Netball Verification Code is:<b>${digitCode}</b>`,
+          `Your ${process.env.APP_NAME} Verification Code is:<b>${digitCode}</b>`,
           3,
           userId,
           userId,
