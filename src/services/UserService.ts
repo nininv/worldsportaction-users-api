@@ -1626,12 +1626,12 @@ export default class UserService extends BaseService<User> {
                 ? 1
                 : 0;
               let competitionId = item.feePaid.find(x => x.competitionId != null);
-              let divisionId = item.feePaid.find(x => x.divisionId != null);
+              let competitionMembershipProductDivisionId = item.feePaid.find(x => x.competitionMembershipProductDivisionId != null);
               let registrationId = item.feePaid.find(x => x.registrationId != null);
               item['invoiceFailedStatus'] = invoiceFailedStatus;
               item['transactionFailedStatus'] = transactionFailedStatus;
               item['competitionId'] = competitionId ? competitionId.competitionId : null;
-              item['divisionId'] = divisionId ? divisionId.divisionId : null;
+              item['competitionMembershipProductDivisionId'] = competitionMembershipProductDivisionId ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
               for (let fee of item.feePaid) {
                 let total = 0;
