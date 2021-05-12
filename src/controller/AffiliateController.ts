@@ -5,6 +5,7 @@ import {
   HeaderParam,
   QueryParam,
   Body,
+  Req,
   Res,
   Authorized,
   Param,
@@ -25,7 +26,7 @@ import {
   isPdf,
   isNullOrEmpty,
 } from '../utils/Utils';
-import { Response, response } from 'express';
+import { Request, Response, response } from 'express';
 import { Affiliate } from '../models/Affiliate';
 import { logger } from '../logger';
 import { User } from '../models/User';
@@ -42,12 +43,14 @@ import AppConstants from '../constants/AppConstants';
 import { CommunicationTrack } from '../models/CommunicationTrack';
 import { isNullOrUndefined } from 'util';
 import { OrganisationHierarchy } from '../models/OrganisationHierarchy';
+import axios from 'axios';
 
 @JsonController('/api')
 export class AffiliateController extends BaseController {
   @Authorized()
   @Post('/affiliates/save')
   async affiliateSave(
+    @Req() request: Request,
     @QueryParam('userId') userId: number,
     @HeaderParam('authorization') currentUser: User,
     @UploadedFiles('organisationLogo') organisationLogoFile: Express.Multer.File[],
@@ -394,6 +397,14 @@ export class AffiliateController extends BaseController {
             //         // }
             //     }
             // }
+
+            const rawHeaders = request.rawHeaders;
+            const authorizationIndex = rawHeaders.findIndex(
+              header => header.toLowerCase() === 'authorization',
+            );
+            const authToken = authorizationIndex >= 0 ? rawHeaders[authorizationIndex + 1] : null;
+            await this.emitAffiliateAddedEvent(organisationRes, { authToken });
+
             return response
               .status(200)
               .send({ id: organisationRes.id, message: 'Successfully inserted' });
@@ -1096,5 +1107,53 @@ export class AffiliateController extends BaseController {
       item => item.linkedOrganisationId === affiliate.affiliateOrgId,
     );
     await this.userService.insertOrganisationHierarchy(linkedOrganisations);
+  }
+
+  private async emitAffiliateAddedEvent(affiliate: Organisation, options: any = {}) {
+    // TODO: This should be generalised and moved to an event based mechanism ASAP
+    if (!process.env.SLS_STREAMER_ENDPOINT) {
+      return logger.info(`Skipping affiliate added event workflow`)
+    }
+
+    if (!process.env.COMMON_SERVICE_API_URL) {
+      return logger.error(`Common API URL need to be configured for emitting afffiliate added events`)
+    }
+
+    const { authToken } = options
+    if (!authToken) {
+      return logger.error(`Need to be authorized to call common api`)
+    }
+
+    const states: any = await axios.get(
+      `${process.env.COMMON_SERVICE_API_URL}/common/reference/State`,
+      {
+        headers: {
+          "Authorization": authToken
+        }
+      }
+    ).catch(err => logger.error(`Couldn't retrieve states`, err) && null)
+    
+    if (!states) {
+      return logger.error(`Couldn't retrieve states while emitting new affiliate event`)
+    }
+
+    const state = states[affiliate.stateRefId]
+    await axios.post(
+      process.env.SLS_STREAMER_ENDPOINT,
+      {
+        clubId: affiliate.id,
+        organisationType: affiliate.organisationTypeRefId,
+        clubName: affiliate.name,
+        emailAddress: affiliate.email,
+        addressLine1: affiliate.street1,
+        suburb: affiliate.suburb,
+        state,
+        postCode: affiliate.postalCode,
+        clubStatus: affiliate.statusRefId,
+        createdDate: options.createdOn || new Date(),
+        updatedDate: options.updatedOn || new Date()
+      }
+    ).catch(error => logger.error(`Couldn't emit affiliate data`, error))
+    logger.info(`Emitted affiliate added info`)
   }
 }
