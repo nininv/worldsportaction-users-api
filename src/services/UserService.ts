@@ -1022,6 +1022,9 @@ export default class UserService extends BaseService<User> {
 
             if (userTemp == undefined) {
               userObj = {
+                requestTimestamp: new Date(),
+                createdOn: item.createdOn,
+                updatedOn: item.updatedOn,
                 userId: item.userId,
                 firstName: item.firstName,
                 middleName: item.middleName,
@@ -1126,11 +1129,10 @@ export default class UserService extends BaseService<User> {
     let { userId, dateUploaded, docType, docUrl, documentId, docTypeDescription } = data;
     try {
       if (!!documentId) {
-        let [
-          document,
-        ] = await this.entityManager.query(`select * from wsa_users.documents where id=?`, [
-          documentId,
-        ]);
+        let [document] = await this.entityManager.query(
+          `select * from wsa_users.documents where id=?`,
+          [documentId],
+        );
         if (document) {
           dateUploaded = document.docUrl == docUrl ? document.dateUploaded : dateUploaded;
           await this.entityManager.query(
@@ -1141,9 +1143,7 @@ export default class UserService extends BaseService<User> {
         }
       }
 
-      let {
-        insertId,
-      } = await this.entityManager.query(
+      let { insertId } = await this.entityManager.query(
         `insert into wsa_users.documents(userId, dateUploaded, docType, docTypeDescription, docUrl) values(?,?,?,?,?)`,
         [userId, dateUploaded, docType, docTypeDescription, docUrl],
       );
@@ -1380,6 +1380,8 @@ export default class UserService extends BaseService<User> {
               }
             });
             let obj = {
+              createdOn: item.createdOn,
+              updatedOn: item.updatedOn,
               key: item.key,
               affiliate: item.affiliate,
               membershipProduct: item.membershipProduct,
@@ -1626,12 +1628,17 @@ export default class UserService extends BaseService<User> {
                 ? 1
                 : 0;
               let competitionId = item.feePaid.find(x => x.competitionId != null);
-              let competitionMembershipProductDivisionId = item.feePaid.find(x => x.competitionMembershipProductDivisionId != null);
+              let competitionMembershipProductDivisionId = item.feePaid.find(
+                x => x.competitionMembershipProductDivisionId != null,
+              );
               let registrationId = item.feePaid.find(x => x.registrationId != null);
               item['invoiceFailedStatus'] = invoiceFailedStatus;
               item['transactionFailedStatus'] = transactionFailedStatus;
               item['competitionId'] = competitionId ? competitionId.competitionId : null;
-              item['competitionMembershipProductDivisionId'] = competitionMembershipProductDivisionId ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId : null;
+              item['competitionMembershipProductDivisionId'] =
+                competitionMembershipProductDivisionId
+                  ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
+                  : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
               for (let fee of item.feePaid) {
                 let total = 0;

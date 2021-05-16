@@ -96,7 +96,7 @@ export class UserDashboardController extends BaseController {
     @Res() response: Response,
   ) {
     try {
-      if (userId) {
+      if (userId && organisationUniqueKey) {
         if (currentUser.id) {
           const userPersonalDetailsRes = await this.userService.userPersonalDetails(
             userId,
@@ -106,7 +106,7 @@ export class UserDashboardController extends BaseController {
         }
       }
     } catch (error) {
-      logger.error(`Error Occurred in affilatelist ${userId}` + error);
+      logger.error(`Error fetching personaldetails ${userId}` + error);
       return response.status(500).send({
         message:
           process.env.NODE_ENV == AppConstants.development
@@ -599,7 +599,9 @@ export class UserDashboardController extends BaseController {
         // if (validateComp != null) {
         //     return response.status(212).send(validateComp);
         // }
-        let responseObj = {};
+        let responseObj = {
+          requestTimestamp: new Date(),
+        };
 
         // todo: refactor below and remove redundant promises?
 
@@ -899,9 +901,9 @@ export class UserDashboardController extends BaseController {
           logger.info(`existing email: ${userFromDb.email}`);
           // check if email was changed
           if (requestBody.email.toLowerCase().trim() != userFromDb.email.toLowerCase()) {
-            let pseudoEmail = `${requestBody.email
+            let pseudoEmail = `${requestBody.email.toLowerCase().trim()}.${requestBody.firstName
               .toLowerCase()
-              .trim()}.${requestBody.firstName.toLowerCase().trim()}`;
+              .trim()}`;
             logger.info(`checking details for : ${pseudoEmail}`);
             if (pseudoEmail != userFromDb.email.toLowerCase()) {
               // also check child user format

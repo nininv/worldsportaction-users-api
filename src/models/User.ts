@@ -112,6 +112,10 @@ export class User extends BaseEntity {
   @Column()
   createdBy: number;
 
+  @IsDate()
+  @Column({ nullable: true, default: null })
+  createdOn: Date;
+
   @IsNumber()
   @Column({ nullable: true, default: null })
   updatedBy: number;
