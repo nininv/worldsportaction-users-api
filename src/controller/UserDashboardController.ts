@@ -96,14 +96,18 @@ export class UserDashboardController extends BaseController {
     @Res() response: Response,
   ) {
     try {
-      if (userId && organisationUniqueKey) {
-        if (currentUser.id) {
-          const userPersonalDetailsRes = await this.userService.userPersonalDetails(
-            userId,
-            organisationUniqueKey,
-          );
-          return response.status(200).send(userPersonalDetailsRes);
+      if (userId && currentUser.id) {
+        if (!organisationUniqueKey && currentUser.id != userId) {
+          return response.status(401).send({
+            name: 'access_error',
+            message: `Not allowed to access user`,
+          });
         }
+        const userPersonalDetailsRes = await this.userService.userPersonalDetails(
+          userId,
+          organisationUniqueKey,
+        );
+        return response.status(200).send(userPersonalDetailsRes);
       }
     } catch (error) {
       logger.error(`Error fetching personaldetails ${userId}` + error);
