@@ -469,9 +469,8 @@ export class AffiliateController extends BaseController {
             });
           }
 
-          const checkPreviousCharityRoundUp = await this.charityRoundUpService.checkPreviousCharityRoundUp(
-            organisationId,
-          );
+          const checkPreviousCharityRoundUp =
+            await this.charityRoundUpService.checkPreviousCharityRoundUp(organisationId);
           let previousCharityRoundUp = [];
           if (isArrayPopulated(checkPreviousCharityRoundUp)) {
             for (let i of checkPreviousCharityRoundUp) previousCharityRoundUp.push(i.id);
@@ -527,9 +526,8 @@ export class AffiliateController extends BaseController {
 
           await this.charityService.batchCreateOrUpdate(charityArr);
 
-          let getCurrentCharityRoundUp = await this.charityRoundUpService.checkPreviousCharityRoundUp(
-            organisationId,
-          );
+          let getCurrentCharityRoundUp =
+            await this.charityRoundUpService.checkPreviousCharityRoundUp(organisationId);
           let getCurrentCharity = await this.charityService.checkPreviousCharity(organisationId);
 
           return response
@@ -1112,35 +1110,35 @@ export class AffiliateController extends BaseController {
   private async emitAffiliateAddedEvent(affiliate: Organisation, options: any = {}) {
     // TODO: This should be generalised and moved to an event based mechanism ASAP
     if (!process.env.SLS_STREAMER_ENDPOINT) {
-      return logger.info(`Skipping affiliate added event workflow`)
+      return logger.info(`Skipping affiliate added event workflow`);
     }
 
     if (!process.env.COMMON_SERVICE_API_URL) {
-      return logger.error(`Common API URL need to be configured for emitting afffiliate added events`)
+      return logger.error(
+        `Common API URL need to be configured for emitting afffiliate added events`,
+      );
     }
 
-    const { authToken } = options
+    const { authToken } = options;
     if (!authToken) {
-      return logger.error(`Need to be authorized to call common api`)
+      return logger.error(`Need to be authorized to call common api`);
     }
 
-    const states: any = await axios.get(
-      `${process.env.COMMON_SERVICE_API_URL}/common/reference/State`,
-      {
+    const states: any = await axios
+      .get(`${process.env.COMMON_SERVICE_API_URL}/common/reference/State`, {
         headers: {
-          "Authorization": authToken
-        }
-      }
-    ).catch(err => logger.error(`Couldn't retrieve states`, err) && null)
-    
+          Authorization: authToken,
+        },
+      })
+      .catch(err => logger.error(`Couldn't retrieve states`, err) && null);
+
     if (!states) {
-      return logger.error(`Couldn't retrieve states while emitting new affiliate event`)
+      return logger.error(`Couldn't retrieve states while emitting new affiliate event`);
     }
 
-    const state = states[affiliate.stateRefId]
-    await axios.post(
-      process.env.SLS_STREAMER_ENDPOINT,
-      {
+    const state = states[affiliate.stateRefId];
+    await axios
+      .post(process.env.SLS_STREAMER_ENDPOINT, {
         clubId: affiliate.id,
         organisationType: affiliate.organisationTypeRefId,
         clubName: affiliate.name,
@@ -1151,9 +1149,9 @@ export class AffiliateController extends BaseController {
         postCode: affiliate.postalCode,
         clubStatus: affiliate.statusRefId,
         createdDate: options.createdOn || new Date(),
-        updatedDate: options.updatedOn || new Date()
-      }
-    ).catch(error => logger.error(`Couldn't emit affiliate data`, error))
-    logger.info(`Emitted affiliate added info`)
+        updatedDate: options.updatedOn,
+      })
+      .catch(error => logger.error(`Couldn't emit affiliate data`, error));
+    logger.info(`Emitted affiliate added info`);
   }
 }
