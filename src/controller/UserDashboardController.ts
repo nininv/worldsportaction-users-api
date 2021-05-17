@@ -889,6 +889,9 @@ export class UserDashboardController extends BaseController {
       let userReg = new UserRegistration();
       let ureData = new UserRoleEntity();
       let organisationName = null;
+      user.updatedBy = currentUser.id;
+      user.updatedOn = new Date();
+
       if (!isNullOrUndefined(organisationId)) {
         let organisation = await this.organisationService.findOrgByUniquekey(organisationId);
         organisationName = organisation.name;
