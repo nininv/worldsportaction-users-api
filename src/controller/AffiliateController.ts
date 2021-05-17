@@ -1148,8 +1148,8 @@ export class AffiliateController extends BaseController {
         state,
         postCode: affiliate.postalCode,
         clubStatus: affiliate.statusRefId,
-        createdDate: options.createdOn || new Date(),
-        updatedDate: options.updatedOn,
+        createdDate: affiliate.createdOn || new Date(),
+        lastUpdateDate: affiliate.updatedOn || new Date(),
       })
       .catch(error => logger.error(`Couldn't emit affiliate data`, error));
     logger.info(`Emitted affiliate added info`);
