@@ -1139,15 +1139,15 @@ export class AffiliateController extends BaseController {
     const state = states.data.find((state: any) => state.id === Number(affiliate.stateRefId));
     await axios
       .post(process.env.SLS_STREAMER_ENDPOINT, {
-        clubId: affiliate.id,
-        organisationType: affiliate.organisationTypeRefId,
+        clubId: Number(affiliate.id),
+        organisationType: Number(affiliate.organisationTypeRefId),
         clubName: affiliate.name,
         emailAddress: affiliate.email,
         addressLine1: affiliate.street1,
         suburb: affiliate.suburb,
         state: state && state.name,
         postCode: affiliate.postalCode,
-        clubStatus: affiliate.statusRefId,
+        clubStatus: Number(affiliate.statusRefId),
         createdDate: affiliate.createdOn || new Date(),
         lastUpdateDate: affiliate.updatedOn || new Date(),
       })
