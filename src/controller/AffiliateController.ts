@@ -1132,11 +1132,11 @@ export class AffiliateController extends BaseController {
       })
       .catch(err => logger.error(`Couldn't retrieve states`, err) && null);
 
-    if (!states) {
+    if (!states || !states.data) {
       return logger.error(`Couldn't retrieve states while emitting new affiliate event`);
     }
 
-    const state = states[affiliate.stateRefId];
+    const state = states.data[affiliate.stateRefId];
     await axios
       .post(process.env.SLS_STREAMER_ENDPOINT, {
         clubId: affiliate.id,
@@ -1145,7 +1145,7 @@ export class AffiliateController extends BaseController {
         emailAddress: affiliate.email,
         addressLine1: affiliate.street1,
         suburb: affiliate.suburb,
-        state,
+        state: state && state.name,
         postCode: affiliate.postalCode,
         clubStatus: affiliate.statusRefId,
         createdDate: affiliate.createdOn || new Date(),
