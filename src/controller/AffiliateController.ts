@@ -202,6 +202,7 @@ export class AffiliateController extends BaseController {
               }
             }
             let organisationRes = await this.organisationService.createOrUpdate(organisation);
+            organisationRes && await organisationRes.reload();
             let affiliatedToOrgId = await this.organisationService.findByUniquekey(
               requestBody.affiliatedToOrgId,
             );
