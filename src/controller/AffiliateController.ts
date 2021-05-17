@@ -1136,7 +1136,7 @@ export class AffiliateController extends BaseController {
       return logger.error(`Couldn't retrieve states while emitting new affiliate event`);
     }
 
-    const state = states.data[affiliate.stateRefId];
+    const state = states.data.find((state: any) => state.id === Number(affiliate.stateRefId));
     await axios
       .post(process.env.SLS_STREAMER_ENDPOINT, {
         clubId: affiliate.id,
