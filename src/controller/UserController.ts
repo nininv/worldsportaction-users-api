@@ -306,6 +306,10 @@ export class UserController extends BaseController {
     @QueryParam('userName') userName: string,
     @Res() response: Response,
   ) {
+    // functionId 8 is for scorer candidates - we should only allow search by name, and maybe not require firebase?
+    if ((!userName && functionId === 8) || (userName && userName.length < 3)) {
+      return [];
+    }
     let result = await this.userService.getUsersBySecurity(
       entityTypeId,
       entityId,
@@ -317,7 +321,7 @@ export class UserController extends BaseController {
       null,
     );
 
-    if (result && result.userData && Array.isArray(result.userData)) {
+    if (result && result.userData && Array.isArray(result.userData) && functionId != 8) {
       // Here we are checking every user with firestore inorder to make sure
       // we have proper firebaseUID and firestore database set for the user.
       const promises = result.userData.map(async user => {
@@ -461,8 +465,8 @@ export class UserController extends BaseController {
       matchStartTime,
       matchEndTime,
       true,
-        null,
-        null,
+      null,
+      null,
       matchId,
     );
 
@@ -655,12 +659,10 @@ export class UserController extends BaseController {
       await this.checkFirestoreDatabase(user);
       return response.status(200).send({ verified: true });
     } catch (error) {
-      return response
-        .status(500)
-        .send({
-          verified: false,
-          message: process.env.NODE_ENV == AppConstants.development ? error : error,
-        });
+      return response.status(500).send({
+        verified: false,
+        message: process.env.NODE_ENV == AppConstants.development ? error : error,
+      });
     }
   }
 
@@ -671,7 +673,7 @@ export class UserController extends BaseController {
     return {
       authToken: authToken(login, password),
       user: user,
-      signDate: signDate
+      signDate: signDate,
     };
   }
 
@@ -710,14 +712,12 @@ export class UserController extends BaseController {
       return response.status(200).send(res);
     } catch (error) {
       logger.error(`Unable to get Friend details `, error);
-      return response
-        .status(500)
-        .send({
-          message:
-            process.env.NODE_ENV == AppConstants.development
-              ? 'Something went wrong' + error
-              : 'Something went wrong',
-        });
+      return response.status(500).send({
+        message:
+          process.env.NODE_ENV == AppConstants.development
+            ? 'Something went wrong' + error
+            : 'Something went wrong',
+      });
     }
   }
   @Authorized()
@@ -824,14 +824,12 @@ export class UserController extends BaseController {
       return response.status(200).send(res);
     } catch (error) {
       logger.error(`Unable to get Refer friend details `, error);
-      return response
-        .status(500)
-        .send({
-          message:
-            process.env.NODE_ENV == AppConstants.development
-              ? 'Something went wrong' + error
-              : 'Something went wrong',
-        });
+      return response.status(500).send({
+        message:
+          process.env.NODE_ENV == AppConstants.development
+            ? 'Something went wrong' + error
+            : 'Something went wrong',
+      });
     }
   }
 
@@ -849,14 +847,12 @@ export class UserController extends BaseController {
       return response.status(200).send(res);
     } catch (error) {
       logger.error(`Unable to get Refer friend details `, error);
-      return response
-        .status(500)
-        .send({
-          message:
-            process.env.NODE_ENV == AppConstants.development
-              ? 'Something went wrong' + error
-              : 'Something went wrong',
-        });
+      return response.status(500).send({
+        message:
+          process.env.NODE_ENV == AppConstants.development
+            ? 'Something went wrong' + error
+            : 'Something went wrong',
+      });
     }
   }
 
