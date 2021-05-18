@@ -321,15 +321,18 @@ export class UserController extends BaseController {
       null,
     );
 
-    if (result && result.userData && Array.isArray(result.userData) && functionId != 8) {
+    if (result && result.userData && Array.isArray(result.userData)) {
       // Here we are checking every user with firestore inorder to make sure
       // we have proper firebaseUID and firestore database set for the user.
-      const promises = result.userData.map(async user => {
-        await this.checkUserForFirestore(user);
-        return user;
-      });
-
-      return await Promise.all(promises);
+      if (functionId != 8) {
+        const promises = result.userData.map(async user => {
+          await this.checkUserForFirestore(user);
+          return user;
+        });
+        return await Promise.all(promises);
+      } else {
+        return result.userData;
+      }
     } else {
       return [];
     }
