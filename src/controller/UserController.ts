@@ -306,7 +306,8 @@ export class UserController extends BaseController {
     @QueryParam('userName') userName: string,
     @Res() response: Response,
   ) {
-    // functionId 8 is for scorer candidates - we should only allow search by name, and maybe not require firebase?
+    // TODO: functionId 8 is for scorer candidates - we should only allow search by name,
+    // and maybe not require firebase?
     if ((!userName && functionId === 8) || (userName && userName.length < 3)) {
       return [];
     }
@@ -331,7 +332,11 @@ export class UserController extends BaseController {
         });
         return await Promise.all(promises);
       } else {
-        return result.userData;
+        return result.userData.map(user => {
+          user.email = user.email.toLowerCase();
+          user['linkedEntity'] = JSON.parse(user['linkedEntity']);
+          return user;
+        });
       }
     } else {
       return [];
