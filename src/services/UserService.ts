@@ -1692,11 +1692,11 @@ export default class UserService extends BaseService<User> {
       let userId = teamBody.userId;
       let limit = teamBody.teamMemberPaging.limit;
       let offset = teamBody.teamMemberPaging.offset;
-      let divisionId = teamBody.competitionMembershipProductDivisionId;
+      let competitionMembershipProductDivisionId = teamBody.competitionMembershipProductDivisionId;
 
       let query = await this.entityManager.query(
         `call wsa_users.usp_registration_team_member_details(?,?,?,?,?)`,
-        [limit, offset, userId, teamId, divisionId],
+        [limit, offset, userId, teamId, competitionMembershipProductDivisionId],
       );
 
       if (query != null) {
@@ -1704,9 +1704,11 @@ export default class UserService extends BaseService<User> {
         let responseObject = paginationData(stringTONumber(totalCount), limit, offset);
         if (isArrayPopulated(query[1])) {
           for (let item of query[1]) {
+            item.paymentStatus = (item.deRegisterStatus == null || item.deRegisterStatus == 0 || item.deRegisterStatus == "0") 
+                                  ? item.paymentStatus : item.deRegisterStatus;
             let totalPaidFee = 0;
             let totalPendingFee = 0;
-            // item.organisationId = item.organisationUniqueKey;
+            
             if (isArrayPopulated(item.paidFee)) {
               for (let fee of item.paidFee) {
                 let total = 0;

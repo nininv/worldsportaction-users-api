@@ -1,6 +1,6 @@
 import winston from "winston";
 import WinstonCloudWatch from "winston-cloudwatch";
-import stringify from 'safe-stable-stringify';
+import stringify from "safe-stable-stringify";
 
 // TO-FIX: Although this can be supplied while executing the node process,
 // with the current deployment model, this needs to be hard set here to
