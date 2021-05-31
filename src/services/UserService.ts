@@ -1129,10 +1129,11 @@ export default class UserService extends BaseService<User> {
     let { userId, dateUploaded, docType, docUrl, documentId, docTypeDescription } = data;
     try {
       if (!!documentId) {
-        let [document] = await this.entityManager.query(
-          `select * from wsa_users.documents where id=?`,
-          [documentId],
-        );
+        let [
+          document,
+        ] = await this.entityManager.query(`select * from wsa_users.documents where id=?`, [
+          documentId,
+        ]);
         if (document) {
           dateUploaded = document.docUrl == docUrl ? document.dateUploaded : dateUploaded;
           await this.entityManager.query(
@@ -1143,7 +1144,9 @@ export default class UserService extends BaseService<User> {
         }
       }
 
-      let { insertId } = await this.entityManager.query(
+      let {
+        insertId,
+      } = await this.entityManager.query(
         `insert into wsa_users.documents(userId, dateUploaded, docType, docTypeDescription, docUrl) values(?,?,?,?,?)`,
         [userId, dateUploaded, docType, docTypeDescription, docUrl],
       );
@@ -1635,10 +1638,11 @@ export default class UserService extends BaseService<User> {
               item['invoiceFailedStatus'] = invoiceFailedStatus;
               item['transactionFailedStatus'] = transactionFailedStatus;
               item['competitionId'] = competitionId ? competitionId.competitionId : null;
-              item['competitionMembershipProductDivisionId'] =
-                competitionMembershipProductDivisionId
-                  ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
-                  : null;
+              item[
+                'competitionMembershipProductDivisionId'
+              ] = competitionMembershipProductDivisionId
+                ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
+                : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
               for (let fee of item.feePaid) {
                 let total = 0;
@@ -1692,11 +1696,10 @@ export default class UserService extends BaseService<User> {
       let userId = teamBody.userId;
       let limit = teamBody.teamMemberPaging.limit;
       let offset = teamBody.teamMemberPaging.offset;
-      let competitionMembershipProductDivisionId = teamBody.competitionMembershipProductDivisionId;
 
       let query = await this.entityManager.query(
-        `call wsa_users.usp_registration_team_member_details(?,?,?,?,?)`,
-        [limit, offset, userId, teamId, competitionMembershipProductDivisionId],
+        `call wsa_users.usp_registration_team_member_details(?,?,?,?,)`,
+        [limit, offset, userId, teamId],
       );
 
       if (query != null) {
@@ -1704,35 +1707,39 @@ export default class UserService extends BaseService<User> {
         let responseObject = paginationData(stringTONumber(totalCount), limit, offset);
         if (isArrayPopulated(query[1])) {
           for (let item of query[1]) {
-            item.paymentStatus = (item.deRegisterStatus == null || item.deRegisterStatus == 0 || item.deRegisterStatus == "0") 
-                                  ? item.paymentStatus : item.deRegisterStatus;
+            item.paymentStatus =
+              (item.deRegisterStatus == null ||
+               item.deRegisterStatus == 0 ||
+               item.deRegisterStatus == '0')
+                ? item.paymentStatus
+                : item.deRegisterStatus;
             let totalPaidFee = 0;
             let totalPendingFee = 0;
-            
+
             if (isArrayPopulated(item.paidFee)) {
               for (let fee of item.paidFee) {
                 let total = 0;
                 if (isArrayPopulated(fee)) {
                   for (let f of fee) {
                     total =
-                      feeIsNull(f.feeAmount) +
-                      feeIsNull(f.gstAmount) -
-                      feeIsNull(f.discountAmount) -
-                      feeIsNull(f.familyDiscountAmount) -
-                      (feeIsNull(f.governmentVoucherAmount)
-                        ? feeIsNull(f.governmentVoucherAmount)
-                        : 0);
+                      (feeIsNull(f.feeAmount) +
+                       feeIsNull(f.gstAmount)) -
+                      (feeIsNull(f.discountAmount) +
+                        feeIsNull(f.familyDiscountAmount) +
+                        (feeIsNull(f.governmentVoucherAmount)
+                          ? feeIsNull(f.governmentVoucherAmount)
+                          : 0));
                     totalPaidFee = feeIsNull(totalPaidFee) + feeIsNull(total);
                   }
                 } else {
                   total =
-                    feeIsNull(fee.feeAmount) +
-                    feeIsNull(fee.gstAmount) -
-                    feeIsNull(fee.discountAmount) -
-                    feeIsNull(fee.familyDiscountAmount) -
-                    (feeIsNull(fee.governmentVoucherAmount)
-                      ? feeIsNull(fee.governmentVoucherAmount)
-                      : 0);
+                    (feeIsNull(fee.feeAmount) +
+                     feeIsNull(fee.gstAmount)) -
+                    (feeIsNull(fee.discountAmount) +
+                      feeIsNull(fee.familyDiscountAmount) +
+                      (feeIsNull(fee.governmentVoucherAmount)
+                        ? feeIsNull(fee.governmentVoucherAmount)
+                        : 0));
                   totalPaidFee = feeIsNull(totalPaidFee) + feeIsNull(total);
                 }
               }
@@ -1745,24 +1752,24 @@ export default class UserService extends BaseService<User> {
                 if (isArrayPopulated(fee)) {
                   for (let f of fee) {
                     total =
-                      feeIsNull(f.feeAmount) +
-                      feeIsNull(f.gstAmount) -
-                      feeIsNull(f.discountAmount) -
-                      feeIsNull(f.familyDiscountAmount) -
-                      (feeIsNull(f.governmentVoucherAmount)
-                        ? feeIsNull(f.governmentVoucherAmount)
-                        : 0);
+                      (feeIsNull(f.feeAmount) +
+                       feeIsNull(f.gstAmount)) -
+                      (feeIsNull(f.discountAmount) +
+                        feeIsNull(f.familyDiscountAmount) +
+                        (feeIsNull(f.governmentVoucherAmount)
+                          ? feeIsNull(f.governmentVoucherAmount)
+                          : 0));
                     totalPendingFee = feeIsNull(totalPendingFee) + feeIsNull(total);
                   }
                 } else {
                   total =
-                    feeIsNull(fee.feeAmount) +
-                    feeIsNull(fee.gstAmount) -
-                    feeIsNull(fee.discountAmount) -
-                    feeIsNull(fee.familyDiscountAmount) -
-                    (feeIsNull(fee.governmentVoucherAmount)
-                      ? feeIsNull(fee.governmentVoucherAmount)
-                      : 0);
+                    (feeIsNull(fee.feeAmount) +
+                     feeIsNull(fee.gstAmount)) -
+                    (feeIsNull(fee.discountAmount) +
+                      feeIsNull(fee.familyDiscountAmount) +
+                      (feeIsNull(fee.governmentVoucherAmount)
+                        ? feeIsNull(fee.governmentVoucherAmount)
+                        : 0));
                   totalPendingFee = feeIsNull(totalPendingFee) + feeIsNull(total);
                 }
               }
