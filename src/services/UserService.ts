@@ -1698,7 +1698,7 @@ export default class UserService extends BaseService<User> {
       let offset = teamBody.teamMemberPaging.offset;
 
       let query = await this.entityManager.query(
-        `call wsa_users.usp_registration_team_member_details(?,?,?,?,)`,
+        `call wsa_users.usp_registration_team_member_details(?,?,?,?)`,
         [limit, offset, userId, teamId],
       );
 
