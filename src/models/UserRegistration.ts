@@ -49,7 +49,7 @@ export class UserRegistration extends BaseEntity {
 
   @IsNumber()
   @Column()
-  personRoleRefId: number;
+  personRegisteringRoleRefId: number;
 
   @IsNumber()
   @Column()
