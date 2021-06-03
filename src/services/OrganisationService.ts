@@ -96,10 +96,31 @@ export default class OrganisationService extends BaseService<Organisation> {
         inner join wsa_users.organisation p on a.affiliatedToOrgId = p.id
         left join wsa_common.reference oState on o.stateRefId = oState.id and oState.referenceGroupId = 37
         left join wsa_common.reference pState on p.stateRefId = pState.id and pState.referenceGroupId = 37
-        where o.isDeleted = 0 and o.organisationTypeRefId != 1 ${name === '' ? '' : 'and lower(o.name) like lower(?)'}
+        where o.isDeleted = 0 and o.organisationTypeRefId != 1 ${
+          name === '' ? '' : 'and lower(o.name) like lower(?)'
+        }
         order by o.name asc`,
       [`%${name}%`],
     );
     return result;
+  }
+
+  public async getAffiliatedOrganisations(organisationIds: number[], level: number) {
+    try {
+      const affiliatesOrganisations = await this.entityManager.query(
+        `select * from wsa_users.organisationHierarchy 
+            where organisationHierarchy.inputOrganisationId in (?)
+            AND organisationHierarchy.linkedOrganisationTypeRefId = ?`,
+        [organisationIds, level],
+      );
+
+      let organisations = [];
+      if (affiliatesOrganisations) {
+        organisations = affiliatesOrganisations.map(org => org.linkedOrganisationId);
+      }
+      return organisations;
+    } catch (err) {
+      throw err;
+    }
   }
 }

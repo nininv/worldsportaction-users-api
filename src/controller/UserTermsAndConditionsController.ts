@@ -9,10 +9,8 @@ import { Response } from 'express';
 export class UserTermsAndConditionsController extends BaseController {
   @Get()
   async index(@HeaderParam('authorization') user: User, @Res() response: Response) {
-    const userTCAcknowledgement = await this.termsAndConditionsAcknowledgementService.getAcknowledgementListForUser(
-      user,
-    );
-    return response.status(200).send({ userTCAcknowledgement });
+    const result = await this.getUserTCAcknowledgement(user);
+    return response.status(200).send({ userTCAcknowledgement: [...result] });
   }
 
   @Post('/')
@@ -23,9 +21,30 @@ export class UserTermsAndConditionsController extends BaseController {
   ) {
     const organization = await this.organisationService.findById(body.organisationId);
     await this.termsAndConditionsAcknowledgementService.saveUserAcknowledge(user, organization);
+    const result = await this.getUserTCAcknowledgement(user);
+    return response.status(200).send({ userTCAcknowledgement: [...result] });
+  }
+
+  async getUserTCAcknowledgement(user) {
     const userTCAcknowledgement = await this.termsAndConditionsAcknowledgementService.getAcknowledgementListForUser(
       user,
     );
-    return response.status(200).send({ userTCAcknowledgement });
+    if (!userTCAcknowledgement.length) {
+      return [];
+    }
+    const organisationFirstLevelList = await this.organisationService.getAffiliatedOrganisations(
+      userTCAcknowledgement,
+      3,
+    );
+
+    const organisationSecondLevel = await this.organisationService.getAffiliatedOrganisations(
+      userTCAcknowledgement,
+      4,
+    );
+    return new Set([
+      ...userTCAcknowledgement,
+      ...organisationFirstLevelList,
+      ...organisationSecondLevel,
+    ]);
   }
 }
