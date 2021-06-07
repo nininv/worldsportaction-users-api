@@ -577,7 +577,7 @@ export default class UserService extends BaseService<User> {
       query
         .innerJoin(Role, 'r', 'r.id = fr.roleId')
         .andWhere('r.id in (:ids)', { ids })
-        .andWhere('ure.entityTypeId in (3,6)');
+        .andWhere('ure.entityTypeId in (3,4,6)');
     }
 
     if (
