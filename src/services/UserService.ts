@@ -635,7 +635,8 @@ export default class UserService extends BaseService<User> {
     } else {
       query
         .andWhere('ure.entityTypeId = :entityTypeId', { entityTypeId })
-        .andWhere('ure.entityId = :entityId', { entityId });
+        .andWhere('ure.entityId = :entityId', { entityId })
+        .andWhere('ure.isDeleted = 0');
     }
 
     if (userName) {
