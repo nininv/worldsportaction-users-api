@@ -1147,7 +1147,11 @@ export class UserController extends BaseController {
     try {
       const parentUser = await this.userService.findById(parentUserId);
       let isSameEmail = 0;
-      if (parentUser.email.toLowerCase() == childUser.email.toLowerCase()) {
+      if (
+        parentUser.email.toLowerCase() == childUser.email.toLowerCase() ||
+        (parentUser.email + '.' + childUser.firstName).toLowerCase() ==
+          childUser.email.toLowerCase()
+      ) {
         isSameEmail = 1;
       }
 
@@ -1159,6 +1163,7 @@ export class UserController extends BaseController {
       } else {
         childUser.isInActive = 0;
         childUser.statusRefId = 1;
+        childUser.createdBy = user.id;
 
         let userDb = await this.userService.findByEmail(childUser.email);
         if (userDb) {
