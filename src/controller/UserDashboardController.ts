@@ -1005,25 +1005,27 @@ export class UserDashboardController extends BaseController {
         let userData = await this.userService.createOrUpdate(user);
 
         let getData;
+        let roleIdStatus = requestBody.status == 'Unlinked' ? AppConstants.PARENT_UNLINKED : AppConstants.PARENT_LINKED;
         if (section == 'child') {
-          getData = await this.ureService.findExisting(requestBody.userId, userData.id, 4, 9);
+          getData = await this.ureService.findExisting(requestBody.userId, userData.id, 4, roleIdStatus);
           ureData.userId = requestBody.userId;
           ureData.entityId = userData.id;
         } else {
-          getData = await this.ureService.findExisting(userData.id, requestBody.userId, 4, 9);
+          getData = await this.ureService.findExisting(userData.id, requestBody.userId, 4, roleIdStatus);
           ureData.userId = userData.id;
           ureData.entityId = requestBody.userId;
         }
 
         if (getData) {
           ureData.id = getData.id;
+          ureData.roleId = roleIdStatus;
           ureData.updatedBy = currentUser.id;
           ureData.updatedAt = new Date();
         } else {
           ureData.id = 0;
           ureData.createdBy = currentUser.id;
+          ureData.roleId = roleIdStatus;
         }
-        ureData.roleId = 9;
         ureData.entityTypeId = 4;
         await this.ureService.createOrUpdate(ureData);
 
