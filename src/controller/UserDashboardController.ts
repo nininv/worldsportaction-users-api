@@ -1019,7 +1019,6 @@ export class UserDashboardController extends BaseController {
         if (getData) {
           ureData.id = getData.id;
           ureData.roleId = roleIdStatus;
-          ureData.updatedBy = requestBody.userId;
           ureData.updatedAt = new Date();
         } else {
           ureData.id = 0;
