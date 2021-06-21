@@ -1130,11 +1130,10 @@ export default class UserService extends BaseService<User> {
     let { userId, dateUploaded, docType, docUrl, documentId, docTypeDescription } = data;
     try {
       if (!!documentId) {
-        let [
-          document,
-        ] = await this.entityManager.query(`select * from wsa_users.documents where id=?`, [
-          documentId,
-        ]);
+        let [document] = await this.entityManager.query(
+          `select * from wsa_users.documents where id=?`,
+          [documentId],
+        );
         if (document) {
           dateUploaded = document.docUrl == docUrl ? document.dateUploaded : dateUploaded;
           await this.entityManager.query(
@@ -1145,9 +1144,7 @@ export default class UserService extends BaseService<User> {
         }
       }
 
-      let {
-        insertId,
-      } = await this.entityManager.query(
+      let { insertId } = await this.entityManager.query(
         `insert into wsa_users.documents(userId, dateUploaded, docType, docTypeDescription, docUrl) values(?,?,?,?,?)`,
         [userId, dateUploaded, docType, docTypeDescription, docUrl],
       );
@@ -1386,6 +1383,7 @@ export default class UserService extends BaseService<User> {
             let obj = {
               createdOn: item.createdOn,
               updatedOn: item.updatedOn,
+              userId: item.userId,
               key: item.key,
               affiliate: item.affiliate,
               membershipProduct: item.membershipProduct,
@@ -1416,10 +1414,13 @@ export default class UserService extends BaseService<User> {
               alreadyDeRegistered: alreadyDeRegistered,
               // paidBy: item.paidBy,
               // paidByUserId: item.paidByUserId,
+              onBehalfAvailable: 0,
+              isFailedRegistration: item.isFailedRegistration,
               paidByUsers: paidByUsers,
               numberOfMatches: item.numberOfMatches,
               paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId),
             };
+            item.orgId == item.org1Id ? (obj.onBehalfAvailable = 1) : (obj.onBehalfAvailable = 0);
 
             if (isArrayPopulated(result[2])) {
               let filterRes = result[2].filter(x => x.orgRegId == item.orgRegId);
@@ -1514,11 +1515,12 @@ export default class UserService extends BaseService<User> {
     }
   }
 
-  public async otherRegistrationDetails(requestBody: any): Promise<any> {
+  public async otherRegistrationDetails(requestBody: any, orgId): Promise<any> {
     try {
       let limit = requestBody.otherRegPaging.limit;
       let offset = requestBody.otherRegPaging.offset;
       let userId = requestBody.userId;
+      let organisationId = orgId;
       let query = await this.entityManager.query(
         'call wsa_users.usp_registration_your_details(?,?,?)',
         [limit, offset, userId],
@@ -1543,10 +1545,18 @@ export default class UserService extends BaseService<User> {
               item['competitionId'] = competitionId ? competitionId.competitionId : null;
               item['divisionId'] = divisionId ? divisionId.divisionId : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
+              item['competitionMembershipProductDivisionId'] = null;
+              if (item['onBehalfAvailable']) {
+                item['orgRegOrganisationId'] == organisationId
+                  ? (item['onBehalfAvailable'] = 1)
+                  : (item['onBehalfAvailable'] = 0);
+              }
               for (let fee of item.feePaid) {
                 let total = 0;
                 if (isArrayPopulated(fee)) {
                   for (let f of fee) {
+                    item['competitionMembershipProductDivisionId'] =
+                      f.competitionMembershipProductDivisionId;
                     if (f.transactionStatus == 2) {
                       total =
                         feeIsNull(f.feeAmount) +
@@ -1560,6 +1570,8 @@ export default class UserService extends BaseService<User> {
                     }
                   }
                 } else {
+                  item['competitionMembershipProductDivisionId'] =
+                    fee.competitionMembershipProductDivisionId;
                   if (fee.transactionStatus == 2) {
                     total =
                       feeIsNull(fee.feeAmount) +
@@ -1610,11 +1622,12 @@ export default class UserService extends BaseService<User> {
     }
   }
 
-  public async childRegistrationDetails(requestBody: any): Promise<any> {
+  public async childRegistrationDetails(requestBody: any, orgId): Promise<any> {
     try {
       let limit = requestBody.childRegPaging.limit;
       let offset = requestBody.childRegPaging.offset;
       let userId = requestBody.userId;
+      let organisationId = orgId;
       let query = await this.entityManager.query(
         'call wsa_users.usp_registration_child_details(?,?,?)',
         [limit, offset, userId],
@@ -1639,12 +1652,16 @@ export default class UserService extends BaseService<User> {
               item['invoiceFailedStatus'] = invoiceFailedStatus;
               item['transactionFailedStatus'] = transactionFailedStatus;
               item['competitionId'] = competitionId ? competitionId.competitionId : null;
-              item[
-                'competitionMembershipProductDivisionId'
-              ] = competitionMembershipProductDivisionId
-                ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
-                : null;
+              item['competitionMembershipProductDivisionId'] =
+                competitionMembershipProductDivisionId
+                  ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
+                  : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
+              if (item['onBehalfAvailable']) {
+                item.orgRegOrganisationId == organisationId
+                  ? (item['onBehalfAvailable'] = 1)
+                  : (item['onBehalfAvailable'] = 0);
+              }
               for (let fee of item.feePaid) {
                 let total = 0;
                 if (isArrayPopulated(fee)) {
@@ -1709,9 +1726,9 @@ export default class UserService extends BaseService<User> {
         if (isArrayPopulated(query[1])) {
           for (let item of query[1]) {
             item.paymentStatus =
-              (item.deRegisterStatus == null ||
-               item.deRegisterStatus == 0 ||
-               item.deRegisterStatus == '0')
+              item.deRegisterStatus == null ||
+              item.deRegisterStatus == 0 ||
+              item.deRegisterStatus == '0'
                 ? item.paymentStatus
                 : item.deRegisterStatus;
             let totalPaidFee = 0;
@@ -1723,8 +1740,8 @@ export default class UserService extends BaseService<User> {
                 if (isArrayPopulated(fee)) {
                   for (let f of fee) {
                     total =
-                      (feeIsNull(f.feeAmount) +
-                       feeIsNull(f.gstAmount)) -
+                      feeIsNull(f.feeAmount) +
+                      feeIsNull(f.gstAmount) -
                       (feeIsNull(f.discountAmount) +
                         feeIsNull(f.familyDiscountAmount) +
                         (feeIsNull(f.governmentVoucherAmount)
@@ -1734,8 +1751,8 @@ export default class UserService extends BaseService<User> {
                   }
                 } else {
                   total =
-                    (feeIsNull(fee.feeAmount) +
-                     feeIsNull(fee.gstAmount)) -
+                    feeIsNull(fee.feeAmount) +
+                    feeIsNull(fee.gstAmount) -
                     (feeIsNull(fee.discountAmount) +
                       feeIsNull(fee.familyDiscountAmount) +
                       (feeIsNull(fee.governmentVoucherAmount)
@@ -1753,8 +1770,8 @@ export default class UserService extends BaseService<User> {
                 if (isArrayPopulated(fee)) {
                   for (let f of fee) {
                     total =
-                      (feeIsNull(f.feeAmount) +
-                       feeIsNull(f.gstAmount)) -
+                      feeIsNull(f.feeAmount) +
+                      feeIsNull(f.gstAmount) -
                       (feeIsNull(f.discountAmount) +
                         feeIsNull(f.familyDiscountAmount) +
                         (feeIsNull(f.governmentVoucherAmount)
@@ -1764,8 +1781,8 @@ export default class UserService extends BaseService<User> {
                   }
                 } else {
                   total =
-                    (feeIsNull(fee.feeAmount) +
-                     feeIsNull(fee.gstAmount)) -
+                    feeIsNull(fee.feeAmount) +
+                    feeIsNull(fee.gstAmount) -
                     (feeIsNull(fee.discountAmount) +
                       feeIsNull(fee.familyDiscountAmount) +
                       (feeIsNull(fee.governmentVoucherAmount)
