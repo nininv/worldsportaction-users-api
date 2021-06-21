@@ -606,6 +606,7 @@ export class UserDashboardController extends BaseController {
         let responseObj = {
           requestTimestamp: new Date(),
         };
+        let organisationId = await this.organisationService.findByUniquekey(requestBody.organisationId);
 
         // todo: refactor below and remove redundant promises?
 
@@ -619,6 +620,7 @@ export class UserDashboardController extends BaseController {
         const otherRegRes = new Promise(async (resolve, reject) => {
           responseObj['otherRegistrations'] = await this.userService.otherRegistrationDetails(
             requestBody,
+            organisationId
           );
           resolve(responseObj['otherRegistrations']);
         });
@@ -626,6 +628,7 @@ export class UserDashboardController extends BaseController {
         const childRegRes = new Promise(async (resolve, reject) => {
           responseObj['childRegistrations'] = await this.userService.childRegistrationDetails(
             requestBody,
+            organisationId
           );
           resolve(responseObj['childRegistrations']);
         });
