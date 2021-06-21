@@ -1365,6 +1365,9 @@ export default class UserService extends BaseService<User> {
             }
             console.log(`!!!!!${deRegisterStatus}&&&&&&&${deRegisterId}`);
             let paymentStatus = deRegisterStatus != null ? deRegisterStatus : item.paymentStatus;
+            if (item.isOnBehalfFailed) {
+              paymentStatus = AppConstants.failedRegistration;
+            }
             let alreadyDeRegistered = deRegisterStatus != null ? 1 : 0;
             let userMap = new Map();
             let paidByUsers = [];

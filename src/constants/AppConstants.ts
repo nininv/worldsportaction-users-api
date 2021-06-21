@@ -41,6 +41,7 @@ const AppConstants = {
   PARENT_LINKED: 9,
   parentsLogin: '(Parent`s login)',
   appName: '{{appName}}',
+  failedRegistration: 'Failed Registration',
 };
 
 export default AppConstants;
