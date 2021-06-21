@@ -1363,7 +1363,7 @@ export default class UserService extends BaseService<User> {
               deRegisterStatus = item.deRegisterStatusRefId.find(x => x).deRegisterStatus;
               deRegisterId = item.deRegisterStatusRefId.find(x => x).deRegisterId;
             }
-            console.log(`!!!!!${deRegisterStatus}&&&&&&&${deRegisterId}`);
+            console.log(`!!!!!${deRegisterStatus}&&&&&&&${deRegisterId}@@@@@@${item.paymentStatus}`);
             let paymentStatus = deRegisterStatus != null ? deRegisterStatus : item.paymentStatus;
             if (item.isOnBehalfFailed) {
               paymentStatus = AppConstants.failedRegistration;
@@ -1417,13 +1417,13 @@ export default class UserService extends BaseService<User> {
               alreadyDeRegistered: alreadyDeRegistered,
               // paidBy: item.paidBy,
               // paidByUserId: item.paidByUserId,
-              onBehalfAvailable: 0,
+              isOnBehalfFailed: 0,
               isFailedRegistration: item.isFailedRegistration,
               paidByUsers: paidByUsers,
               numberOfMatches: item.numberOfMatches,
               paidByThisUser: !!paidByUsers.find(({ paidByUserId }) => paidByUserId == userId),
             };
-            item.orgId == item.org1Id ? (obj.onBehalfAvailable = 1) : (obj.onBehalfAvailable = 0);
+            item.orgId == item.org1Id ? (obj.isOnBehalfFailed = 1) : (obj.isOnBehalfFailed = 0);
 
             if (isArrayPopulated(result[2])) {
               let filterRes = result[2].filter(x => x.orgRegId == item.orgRegId);
@@ -1549,10 +1549,10 @@ export default class UserService extends BaseService<User> {
               item['divisionId'] = divisionId ? divisionId.divisionId : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
               item['competitionMembershipProductDivisionId'] = null;
-              if (item['onBehalfAvailable']) {
+              if (item['isOnBehalfFailed']) {
                 item['orgRegOrganisationId'] == organisationId
-                  ? (item['onBehalfAvailable'] = 1)
-                  : (item['onBehalfAvailable'] = 0);
+                  ? (item['isOnBehalfFailed'] = 1)
+                  : (item['isOnBehalfFailed'] = 0);
               }
               for (let fee of item.feePaid) {
                 let total = 0;
@@ -1660,10 +1660,10 @@ export default class UserService extends BaseService<User> {
                   ? competitionMembershipProductDivisionId.competitionMembershipProductDivisionId
                   : null;
               item['registrationId'] = registrationId ? registrationId.registrationId : null;
-              if (item['onBehalfAvailable']) {
+              if (item['isOnBehalfFailed']) {
                 item.orgRegOrganisationId == organisationId
-                  ? (item['onBehalfAvailable'] = 1)
-                  : (item['onBehalfAvailable'] = 0);
+                  ? (item['isOnBehalfFailed'] = 1)
+                  : (item['isOnBehalfFailed'] = 0);
               }
               for (let fee of item.feePaid) {
                 let total = 0;
