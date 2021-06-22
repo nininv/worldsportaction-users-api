@@ -351,6 +351,7 @@ export class UserController extends BaseController {
     @QueryParam('entityId', { required: true }) entityId: number,
     @QueryParam('userName') userName: string,
     @Res() response: Response,
+    @Req() request: Request,
     @QueryParam('sortBy', { required: false }) sortBy?: string,
     @QueryParam('sortOrder', { required: false }) sortOrder?: 'ASC' | 'DESC',
     @QueryParam('offset') offset?: string,
@@ -359,6 +360,10 @@ export class UserController extends BaseController {
     @QueryParam('organisationId') organisationId: number = null,
     @QueryParam('competitionId') competitionId: number = null,
   ) {
+    const rawHeaders = request.rawHeaders;
+    const authorizationIndex = rawHeaders.findIndex( header => header.toLowerCase() === 'authorization');
+    const authToken = rawHeaders[authorizationIndex + 1];
+
     if (
       !isObjectNotNullAndUndefined(roleId) ||
       !isObjectNotNullAndUndefined(entityTypeId) ||
@@ -369,7 +374,8 @@ export class UserController extends BaseController {
         message: `Required parameters not filled`,
       });
     }
-    return await this.loadUserByRoles(
+
+    const result = await this.loadUserByRoles(
       [roleId],
       entityTypeId,
       entityId,
@@ -384,6 +390,13 @@ export class UserController extends BaseController {
       organisationId,
       competitionId,
     );
+
+    const userDataWithSuspension = await this.userService.addSuspensionToUsers(result.userData, authToken)
+
+    return {
+      ...result,
+      userData: userDataWithSuspension,
+    };
   }
 
   @Authorized()
@@ -1243,7 +1256,7 @@ export class UserController extends BaseController {
                 mobile: "0400400400"
                 name: "Mary  "
 
-        otherwise it is coming as 
+        otherwise it is coming as
             childUserId: 0
             userId: 14863 <- this is the child's id **facepalm**
             ... other normal user attributes

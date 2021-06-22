@@ -5,6 +5,7 @@ import speakeasy from 'speakeasy';
 import twilio from 'twilio';
 import { Inject, Service } from 'typedi';
 import { Brackets, In } from 'typeorm-plus';
+import axios from 'axios';
 import AppConstants from '../constants/AppConstants';
 import EmailConstants from '../constants/EmailConstants';
 import { LookForExistingUserBody } from '../controller/types';
@@ -37,6 +38,9 @@ import HelperService from './HelperService';
 import { CompetitionOrganisation } from '../models/CompetitionOrganisation';
 import { Roster } from '../models/security/Roster';
 import { Match } from '../models/Match';
+
+const liveScoreApiDomain = process.env.LIVE_SCORE_API_URL;
+
 @Service()
 export default class UserService extends BaseService<User> {
   s3: aws.S3;
@@ -722,6 +726,42 @@ export default class UserService extends BaseService<User> {
     }
   }
 
+  async addSuspensionToUsers(
+    users: any[],
+    authToken: string,
+  ): Promise<any> {
+    const usersForCheck: { userId: number, date: Date }[] = users.map((user) => {
+      return ({
+        userId: user.id,
+        date: new Date(),
+      });
+    });
+
+    try {
+      const response = await axios.get(
+        `${liveScoreApiDomain}/suspension?users=${encodeURIComponent(JSON.stringify(usersForCheck))}`,
+        {
+          headers: {
+            Authorization: authToken,
+          },
+        },
+      );
+
+      const usersWithSuspensions = response.data.users;
+
+      return users.map((user) => {
+        const usersWithSuspension = usersWithSuspensions.find(({ userId }) => userId === user.id);
+
+        return ({
+          ...user,
+          suspended: usersWithSuspension ? usersWithSuspension.suspended : null,
+        });
+      });
+    } catch (e) {
+      return users;
+    }
+  }
+
   protected filterLinkedEntityByOrganisationRole(
     stringifiedLinkedEntity: string,
     isCompetitionOrganiser: boolean,
@@ -1098,6 +1138,8 @@ export default class UserService extends BaseService<User> {
           }
         }
       }
+
+
 
       return userObj;
     } catch (error) {
