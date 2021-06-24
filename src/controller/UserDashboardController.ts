@@ -606,7 +606,10 @@ export class UserDashboardController extends BaseController {
         let responseObj = {
           requestTimestamp: new Date(),
         };
-        let organisationId = await this.organisationService.findByUniquekey(requestBody.organisationId);
+        let organisationId = null;
+        if (requestBody.organisationId) {
+          organisationId = await this.organisationService.findByUniquekey(requestBody.organisationId);
+        }
 
         // todo: refactor below and remove redundant promises?
 
