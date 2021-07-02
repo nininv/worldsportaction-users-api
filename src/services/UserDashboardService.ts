@@ -107,6 +107,8 @@ export default class UserDashboardService extends BaseService<User> {
                 team: [],
                 isUsed: false,
                 key: textual.id.toString(),
+                firstName: textual.firstName,
+                lastName: textual.lastName,
               };
               textualObj.role.push(roleObj);
               roleMap.set(roleKey, roleObj);
